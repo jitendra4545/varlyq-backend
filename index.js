@@ -1,0 +1,27 @@
+const express = require('express')
+const { connection } = require('./config/db')
+const { UserRouter } = require('./routes/UserRoute')
+require('dotenv').config()
+const app = express()
+app.use(express.json())
+app.use("/users",UserRouter)
+
+
+app.get("/", (req, res) => {
+    res.send('WelCome to Varlyq')
+})
+
+
+
+
+app.listen(process.env.port, async () => {
+
+    try {
+        await connection
+        console.log("Connected to DB")
+    } catch (err) {
+        console.log('Unable to Connect')
+    }
+
+    console.log(`Server running on ${process.env.port}`)
+})
