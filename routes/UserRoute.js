@@ -5,8 +5,17 @@ const bcrypt = require('bcrypt')
 const { UserModel } = require('../model/UserModel')
 const UserRouter = express.Router()
 const jwt = require('jsonwebtoken')
-UserRouter.get("/", (req, res) => {
-    res.send('welcome to userRouter')
+
+
+
+UserRouter.get("/", async (req, res) => {
+
+    try {
+        const data = await UserModel.find()
+        res.send(data)
+    } catch (err) {
+        res.send({ "msg": "Something went wrong ! unable to get users", "err": err.message })
+    }
 })
 
 
@@ -45,16 +54,16 @@ UserRouter.post("/login", async (req, res) => {
                 if (result) {
                     let token = jwt.sign({
                         UserId: userData._id
-                    }, 'jitendra', { expiresIn: '1m' });
+                    }, 'jitendra', { expiresIn: '1h' });
 
 
                     console.log("initial token", token)
 
-                    let reftoken = jwt.sign({
-                        UserId: userData._id
-                    }, 'akshay', { expiresIn: '2m' });
+                    // let reftoken = jwt.sign({
+                    //     UserId: userData._id
+                    // }, 'akshay', { expiresIn: '5m' });
 
-                    console.log("refresh token", reftoken)
+                    // console.log("refresh token", reftoken)
 
                     res.send({ "msg": "User Login Successfully", "token": token })
                 } else {
@@ -70,9 +79,47 @@ UserRouter.post("/login", async (req, res) => {
 })
 
 
-// UserRouter.get("/login", async (req, res) => {
-//     try { } catch (err) { }
-// })
+UserRouter.patch("/:id", async (req, res) => {
+    const id = req.params.id
+    const { name, password, mobile } = req.body
+
+    try {
+
+        bcrypt.hash(password, 8, async function (err, hash) {
+            if (hash) {
+                console.log(hash)
+                let newData = await UserModel.findByIdAndUpdate({ _id: id }, { name: name, mobile: mobile, password: hash })
+
+
+                res.send({ "msg": "User Data Updated Successfully" })
+            } else {
+                res.send({ "msg": "Unable to hash password" })
+            }
+        });
+
+
+    } catch (err) {
+        res.send({ "msg": "Something went wrong ! User unable to update data ", "err": err.message })
+    }
+})
+
+
+
+
+UserRouter.delete("/:id", async (req, res) => {
+    const id = req.params.id
+    try {
+        await UserModel.findByIdAndDelete({ _id: id })
+        res.send({ "msg": "User Deleted Successfully" })
+    } catch (err) {
+
+        res.send({ "msg": "Something went wrong ! User unable to delete data ", "err": err.message })
+    }
+})
+
+
+
+
 module.exports = {
     UserRouter
 }
