@@ -5,8 +5,8 @@ const bcrypt = require('bcrypt')
 const { UserModel } = require('../model/UserModel')
 const UserRouter = express.Router()
 const jwt = require('jsonwebtoken')
-
-
+const redis=require('redis')
+const redisClient=redis.createClient()
 
 UserRouter.get("/", async (req, res) => {
 
@@ -54,18 +54,21 @@ UserRouter.post("/login", async (req, res) => {
                 if (result) {
                     let token = jwt.sign({
                         UserId: userData._id
-                    }, 'jitendra', { expiresIn: '1h' });
+                    }, 'access', { expiresIn: '10m' });
 
 
                     console.log("initial token", token)
 
-                    // let reftoken = jwt.sign({
-                    //     UserId: userData._id
-                    // }, 'akshay', { expiresIn: '5m' });
+                    let reftoken = jwt.sign({
+                        UserId: userData._id
+                    }, 'refresh', { expiresIn: '6d' });
 
-                    // console.log("refresh token", reftoken)
-
-                    res.send({ "msg": "User Login Successfully", "token": token })
+                    console.log("refresh token", reftoken)
+                    // redisClient.set(userData._id.toString(), reftoken);
+console.log(redisClient)
+                    res.send({token,reftoken})
+                    // res.send({ "msg": "User Login Successfully", "token": token })
+                
                 } else {
                     res.send({ "msg": "unable to generate token" })
                 }

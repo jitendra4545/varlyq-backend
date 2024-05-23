@@ -15,7 +15,7 @@ app.get("/", (req, res) => {
 
 
 
-app.listen(process.env.port, async () => {
+app.listen(8200, async () => {
 
     try {
         await connection
@@ -24,5 +24,5 @@ app.listen(process.env.port, async () => {
         console.log('Unable to Connect')
     }
 
-    console.log(`Server running on ${process.env.port}`)
+    console.log(`Server running on 8200`)
 })
